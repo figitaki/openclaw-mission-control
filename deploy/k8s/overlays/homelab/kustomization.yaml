@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+# Customize these for your cluster
+patches:
+  - target:
+      kind: Ingress
+      name: mission-control
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: mission-control.home.arpa
+
+configMapGenerator:
+  - name: mission-control
+    namespace: mission-control
+    behavior: merge
+    literals:
+      - VITE_CONVEX_URL=REPLACE_ME
+      - PORT=4173
+
+# If your cluster needs to pull from GHCR privately, add an imagePullSecret.
+# patches:
+#   - target:
+#       kind: ServiceAccount
+#       name: default
+#     patch: |-
+#       - op: add
+#         path: /imagePullSecrets
+#         value:
+#           - name: ghcr

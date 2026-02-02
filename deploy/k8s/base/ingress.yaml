@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mission-control
+  namespace: mission-control
+  annotations:
+    # Set to your ingress class if needed (k3s commonly: traefik)
+    # kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    - host: mission-control.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mission-control
+                port:
+                  name: http
+  # tls:
+  #   - hosts:
+  #       - mission-control.example.com
+  #     secretName: mission-control-tls

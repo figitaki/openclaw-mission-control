@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mission-control
+  namespace: mission-control
+data:
+  # Convex deployment URL (from `npx convex dev`/`convex deploy` output)
+  # Example: https://your-team-yourproject.convex.cloud
+  VITE_CONVEX_URL: "REPLACE_ME"
+  PORT: "4173"

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mission-control
+  namespace: mission-control
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mission-control
+  template:
+    metadata:
+      labels:
+        app: mission-control
+    spec:
+      containers:
+        - name: mission-control
+          # Build/push this image (or change to whatever registry you use)
+          image: ghcr.io/figitaki/openclaw-mission-control:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 4173
+          envFrom:
+            - configMapRef:
+                name: mission-control
+          # Add secrets if you later introduce them
+          # envFrom:
+          #   - secretRef:
+          #       name: mission-control
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
