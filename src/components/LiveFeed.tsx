@@ -25,7 +25,10 @@ const LiveFeed: React.FC<LiveFeedProps> = ({ isOpen = false, onClose }) => {
 	// Focus management
 	useEffect(() => {
 		if (isOpen && closeButtonRef.current) {
-			closeButtonRef.current.focus();
+			// Use requestAnimationFrame to ensure drawer is fully rendered before moving focus
+			requestAnimationFrame(() => {
+				closeButtonRef.current?.focus();
+			});
 		}
 	}, [isOpen]);
 
@@ -40,7 +43,7 @@ const LiveFeed: React.FC<LiveFeedProps> = ({ isOpen = false, onClose }) => {
 			if (!sidebar) return;
 
 			const focusableElements = sidebar.querySelectorAll<HTMLElement>(
-				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+				'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
 			);
 			const firstElement = focusableElements[0];
 			const lastElement = focusableElements[focusableElements.length - 1];
