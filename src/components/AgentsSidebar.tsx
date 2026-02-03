@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
@@ -12,10 +12,55 @@ const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
 	onClose,
 }) => {
 	const agents = useQuery(api.queries.listAgents);
+	const sidebarRef = useRef<HTMLElement>(null);
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+	// Focus management
+	useEffect(() => {
+		if (isOpen && closeButtonRef.current) {
+			closeButtonRef.current.focus();
+		}
+	}, [isOpen]);
+
+	// Focus trap
+	useEffect(() => {
+		if (!isOpen) return;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key !== "Tab") return;
+
+			const sidebar = sidebarRef.current;
+			if (!sidebar) return;
+
+			const focusableElements = sidebar.querySelectorAll<HTMLElement>(
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+			);
+			const firstElement = focusableElements[0];
+			const lastElement = focusableElements[focusableElements.length - 1];
+
+			if (e.shiftKey) {
+				// Shift + Tab
+				if (document.activeElement === firstElement) {
+					e.preventDefault();
+					lastElement?.focus();
+				}
+			} else {
+				// Tab
+				if (document.activeElement === lastElement) {
+					e.preventDefault();
+					firstElement?.focus();
+				}
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [isOpen]);
 
 	if (agents === undefined) {
 		return (
 			<aside
+				ref={sidebarRef}
 				className={`[grid-area:left-sidebar] sidebar-drawer sidebar-drawer--left bg-white border-r border-border flex flex-col overflow-hidden animate-pulse ${isOpen ? "is-open" : ""}`}
 				aria-label="Agents"
 			>
@@ -37,6 +82,7 @@ const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
 
 	return (
 		<aside
+			ref={sidebarRef}
 			className={`[grid-area:left-sidebar] sidebar-drawer sidebar-drawer--left bg-white border-r border-border flex flex-col overflow-hidden ${isOpen ? "is-open" : ""}`}
 			aria-label="Agents"
 		>
@@ -47,6 +93,7 @@ const AgentsSidebar: React.FC<AgentsSidebarProps> = ({
 				</div>
 				<div className="flex items-center gap-2">
 					<button
+						ref={closeButtonRef}
 						type="button"
 						className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted hover:bg-accent transition-colors"
 						onClick={onClose}

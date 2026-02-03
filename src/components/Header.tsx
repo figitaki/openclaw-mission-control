@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import SignOutButton from "./Signout";
 
 type HeaderProps = {
 	onOpenAgents?: () => void;
 	onOpenLiveFeed?: () => void;
+	leftTriggerRef?: React.RefObject<HTMLButtonElement | null>;
+	rightTriggerRef?: React.RefObject<HTMLButtonElement | null>;
 };
 
-const Header: React.FC<HeaderProps> = ({ onOpenAgents, onOpenLiveFeed }) => {
+const Header: React.FC<HeaderProps> = ({
+	onOpenAgents,
+	onOpenLiveFeed,
+	leftTriggerRef,
+	rightTriggerRef,
+}) => {
 	const [time, setTime] = useState(new Date());
 
 	useEffect(() => {
@@ -38,12 +46,13 @@ const Header: React.FC<HeaderProps> = ({ onOpenAgents, onOpenLiveFeed }) => {
 			<div className="flex items-center gap-2 md:gap-4 min-w-0">
 				<div className="flex md:hidden items-center gap-2">
 					<button
+						ref={leftTriggerRef}
 						type="button"
 						className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-muted hover:bg-accent transition-colors"
 						onClick={onOpenAgents}
 						aria-label="Open agents sidebar"
 					>
-						<span aria-hidden="true">☰</span>
+						<IconChevronRight size={20} aria-hidden="true" />
 					</button>
 				</div>
 				<div className="flex items-center gap-2 min-w-0">
@@ -78,12 +87,13 @@ const Header: React.FC<HeaderProps> = ({ onOpenAgents, onOpenLiveFeed }) => {
 					<span className="text-base">📚</span> Docs
 				</button>
 				<button
+					ref={rightTriggerRef}
 					type="button"
 					className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg bg-muted hover:bg-accent transition-colors"
 					onClick={onOpenLiveFeed}
 					aria-label="Open live feed sidebar"
 				>
-					<span aria-hidden="true">☰</span>
+					<IconChevronLeft size={20} aria-hidden="true" />
 				</button>
 				<div className="text-right">
 					<div className="text-xl font-semibold text-foreground tabular-nums">
