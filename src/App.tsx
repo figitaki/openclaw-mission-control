@@ -1,7 +1,7 @@
 "use client";
 
 import { Authenticated, Unauthenticated } from "convex/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Header from "./components/Header";
 import AgentsSidebar from "./components/AgentsSidebar";
 import MissionQueue from "./components/MissionQueue";
@@ -11,11 +11,25 @@ import SignInForm from "./components/SignIn";
 export default function App() {
 	const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false);
 	const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+	const leftTriggerRef = useRef<HTMLButtonElement>(null);
+	const rightTriggerRef = useRef<HTMLButtonElement>(null);
 
 	const closeSidebars = useCallback(() => {
+		const wasLeftOpen = isLeftSidebarOpen;
+		const wasRightOpen = isRightSidebarOpen;
+
 		setIsLeftSidebarOpen(false);
 		setIsRightSidebarOpen(false);
-	}, []);
+
+		// Return focus to the appropriate trigger button
+		requestAnimationFrame(() => {
+			if (wasLeftOpen && leftTriggerRef.current) {
+				leftTriggerRef.current.focus();
+			} else if (wasRightOpen && rightTriggerRef.current) {
+				rightTriggerRef.current.focus();
+			}
+		});
+	}, [isLeftSidebarOpen, isRightSidebarOpen]);
 
 	const isAnySidebarOpen = useMemo(
 		() => isLeftSidebarOpen || isRightSidebarOpen,
@@ -48,6 +62,8 @@ export default function App() {
 							setIsRightSidebarOpen(true);
 							setIsLeftSidebarOpen(false);
 						}}
+						leftTriggerRef={leftTriggerRef}
+						rightTriggerRef={rightTriggerRef}
 					/>
 
 					{isAnySidebarOpen && (

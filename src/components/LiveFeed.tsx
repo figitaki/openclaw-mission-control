@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
@@ -19,10 +19,58 @@ const filters = [
 const LiveFeed: React.FC<LiveFeedProps> = ({ isOpen = false, onClose }) => {
 	const activities = useQuery(api.queries.listActivities);
 	const agents = useQuery(api.queries.listAgents);
+	const sidebarRef = useRef<HTMLElement>(null);
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+	// Focus management
+	useEffect(() => {
+		if (isOpen && closeButtonRef.current) {
+			// Use requestAnimationFrame to ensure drawer is fully rendered before moving focus
+			requestAnimationFrame(() => {
+				closeButtonRef.current?.focus();
+			});
+		}
+	}, [isOpen]);
+
+	// Focus trap
+	useEffect(() => {
+		if (!isOpen) return;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key !== "Tab") return;
+
+			const sidebar = sidebarRef.current;
+			if (!sidebar) return;
+
+			const focusableElements = sidebar.querySelectorAll<HTMLElement>(
+				'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+			);
+			const firstElement = focusableElements[0];
+			const lastElement = focusableElements[focusableElements.length - 1];
+
+			if (e.shiftKey) {
+				// Shift + Tab
+				if (document.activeElement === firstElement) {
+					e.preventDefault();
+					lastElement?.focus();
+				}
+			} else {
+				// Tab
+				if (document.activeElement === lastElement) {
+					e.preventDefault();
+					firstElement?.focus();
+				}
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [isOpen]);
 
 	if (activities === undefined || agents === undefined) {
 		return (
 			<aside
+				ref={sidebarRef}
 				className={`[grid-area:right-sidebar] sidebar-drawer sidebar-drawer--right bg-white border-l border-border flex flex-col overflow-hidden animate-pulse ${isOpen ? "is-open" : ""}`}
 				aria-label="Live feed"
 			>
@@ -38,6 +86,7 @@ const LiveFeed: React.FC<LiveFeedProps> = ({ isOpen = false, onClose }) => {
 
 	return (
 		<aside
+			ref={sidebarRef}
 			className={`[grid-area:right-sidebar] sidebar-drawer sidebar-drawer--right bg-white border-l border-border flex flex-col overflow-hidden ${isOpen ? "is-open" : ""}`}
 			aria-label="Live feed"
 		>
@@ -47,6 +96,7 @@ const LiveFeed: React.FC<LiveFeedProps> = ({ isOpen = false, onClose }) => {
 					LIVE FEED
 				</div>
 				<button
+					ref={closeButtonRef}
 					type="button"
 					className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted hover:bg-accent transition-colors"
 					onClick={onClose}
